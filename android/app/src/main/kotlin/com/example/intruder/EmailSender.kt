@@ -1,25 +1,49 @@
 package com.example.intruder
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import java.io.File
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.Properties
+import javax.mail.Message
+import javax.mail.Session
+import javax.mail.Transport
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 object EmailSender {
-    fun sendEmail(context: Context, location: String) {
-        val dir = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DCIM), "Intruder")
-        val latestPhoto = dir.listFiles()?.maxByOrNull { it.lastModified() } ?: return
+    private const val TAG = "EmailSender"
 
-        val uri = Uri.fromFile(latestPhoto)
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/jpeg"
-            putExtra(Intent.EXTRA_EMAIL, arrayOf("ton.email@exemple.com"))
-            putExtra(Intent.EXTRA_SUBJECT, "Intrusion détectée")
-            putExtra(Intent.EXTRA_TEXT, "Voici la localisation de l'intrusion : $location")
-            putExtra(Intent.EXTRA_STREAM, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    suspend fun sendEmail(location: String, photoPath: String) {
+        val senderEmail = "ibrahimabakarkori235@gmail.com" // Replace with your sender email
+        val senderPassword = "hijwhqkisagpihiz" // Replace with your sender email password
+        val recipientEmail = "ibrahimabakargori235@gmail.com"
+
+        val properties = Properties().apply {
+            put("mail.smtp.host", "smtp.gmail.com")
+            put("mail.smtp.port", "587")
+            put("mail.smtp.auth", "true")
+            put("mail.smtp.starttls.enable", "true")
         }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
+
+        val session = Session.getInstance(properties, object : javax.mail.Authenticator() {
+            override fun getPasswordAuthentication() =
+                javax.mail.PasswordAuthentication(senderEmail, senderPassword)
+        })
+
+        try {
+            withContext(Dispatchers.IO) {
+                val message = MimeMessage(session).apply {
+                    setFrom(InternetAddress(senderEmail))
+                    setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail))
+                    subject = "Intrusion détectée"
+                    setText("Voici la localisation de l'intrusion : $location\nPhoto path: $photoPath")
+                }
+
+                Transport.send(message)
+                Log.d(TAG, "Email sent successfully.")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error sending email: ${e.message}", e)
+        }
     }
 }

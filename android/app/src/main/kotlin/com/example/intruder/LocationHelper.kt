@@ -4,9 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.os.Looper
+import android.util.Log
 import com.google.android.gms.location.*
 
 object LocationHelper {
+    private const val TAG = "LocationHelper"
+
     @SuppressLint("MissingPermission")
     fun getLocation(context: Context, callback: (String) -> Unit) {
         val fused = LocationServices.getFusedLocationProviderClient(context)
@@ -19,8 +22,11 @@ object LocationHelper {
             override fun onLocationResult(result: LocationResult) {
                 val loc: Location? = result.lastLocation
                 if (loc != null) {
-                    callback("Lat: ${loc.latitude}, Lon: ${loc.longitude}")
+                    val locationString = "Lat: ${loc.latitude}, Lon: ${loc.longitude}"
+                    Log.d(TAG, "Location obtained: $locationString")
+                    callback(locationString)
                 } else {
+                    Log.e(TAG, "Location unavailable")
                     callback("Location unavailable")
                 }
             }

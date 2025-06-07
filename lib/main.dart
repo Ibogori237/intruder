@@ -55,22 +55,30 @@ class _IntruderHomeState extends State<IntruderHome> with WidgetsBindingObserver
   }
 
   Future<void> _initializePermissions() async {
-    await [
-      Permission.camera,
-      Permission.locationWhenInUse,
-      Permission.ignoreBatteryOptimizations,
-      Permission.photos, // Optional but recommended for Android 13+
-      Permission.storage, // Added storage permission
-    ].request();
+  final statuses = await [
+    Permission.camera,
+    Permission.locationWhenInUse,
+    Permission.ignoreBatteryOptimizations,
+    Permission.photos,
+    Permission.storage,
+  ].request();
 
-    try {
-      await platform.invokeMethod('activateDeviceAdmin');
-    } on PlatformException catch (e) {
-      debugPrint("Erreur d'activation de Device Admin: ${e.message}");
-    }
+  debugPrint("Permission statuses: $statuses");
 
-    _loadIntruders();
+  if (statuses[Permission.storage] != PermissionStatus.granted) {
+    debugPrint("Storage permission not granted.");
+  } else {
+    debugPrint("Storage permission granted.");
   }
+
+  try {
+    await platform.invokeMethod('activateDeviceAdmin');
+  } on PlatformException catch (e) {
+    debugPrint("Erreur d'activation de Device Admin: ${e.message}");
+  }
+
+  _loadIntruders();
+}
 
   Future<void> _loadIntruders() async {
     final data = await IntruderDataLoader.loadIntruders();
