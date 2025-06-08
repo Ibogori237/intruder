@@ -19,29 +19,24 @@ class IntruderService : DeviceAdminReceiver() {
 
         try {
             Log.d("IntruderService", "Initiating photo capture...")
-            PhotoCapture.takePhoto(context)
-        } catch (e: Exception) {
-            Log.e("IntruderService", "Photo capture failed: ${e.message}", e)
-        }
-
-        try {
-            Log.d("IntruderService", "Requesting location...")
-            LocationHelper.getLocation(context) { location ->
-                Log.d("IntruderService", "Location obtained: $location")
-                try {
-                    Log.d("IntruderService", "Sending email...")
-                    CoroutineScope(Dispatchers.IO).launch {
-                        // Je suppose que EmailSender.sendEmail(to, location) prend un String en premier paramètre
-                        // Met un email valide ou ce qui est attendu comme 1er paramètre
-                        EmailSender.sendEmail("your_email@example.com", location)
-                        Log.d("IntruderService", "Email sent.")
+            PhotoCapture.takePhoto(context) { photoPath, locationLink ->
+                if (photoPath.isNotEmpty() && locationLink.isNotEmpty()) {
+                    Log.d("IntruderService", "Photo saved at: $photoPath, Location: $locationLink")
+                    try {
+                        Log.d("IntruderService", "Sending email...")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            EmailSender.sendEmail(locationLink, photoPath)
+                            Log.d("IntruderService", "Email sent.")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("IntruderService", "Email sending failed: ${e.message}", e)
                     }
-                } catch (e: Exception) {
-                    Log.e("IntruderService", "Email sending failed: ${e.message}", e)
+                } else {
+                    Log.e("IntruderService", "Photo capture or location retrieval failed.")
                 }
             }
         } catch (e: Exception) {
-            Log.e("IntruderService", "Location retrieval failed: ${e.message}", e)
+            Log.e("IntruderService", "Photo capture failed: ${e.message}", e)
         }
     }
 

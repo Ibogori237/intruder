@@ -134,6 +134,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_fingerprint_reconization:
+    dependency: "direct main"
+    description:
+      name: flutter_fingerprint_reconization
+      sha256: d619682fcac778b64ecd8bf7b41e6d0c3e0a72012ca2a7291506149536a64657
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:

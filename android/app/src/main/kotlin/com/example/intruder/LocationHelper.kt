@@ -22,9 +22,9 @@ object LocationHelper {
             override fun onLocationResult(result: LocationResult) {
                 val loc: Location? = result.lastLocation
                 if (loc != null) {
-                    val locationString = "Lat: ${loc.latitude}, Lon: ${loc.longitude}"
-                    Log.d(TAG, "Location obtained: $locationString")
-                    callback(locationString)
+                    val locationLink = "https://www.google.com/maps?q=${loc.latitude},${loc.longitude}"
+                    Log.d(TAG, "Location obtained: $locationLink")
+                    callback(locationLink)
                 } else {
                     Log.e(TAG, "Location unavailable")
                     callback("Location unavailable")

@@ -13,7 +13,7 @@ import java.util.*
 object PhotoCapture {
     private const val TAG = "PhotoCapture"
 
-    fun takePhoto(context: Context) {
+    fun takePhoto(context: Context, onPhotoSaved: (String, String) -> Unit) { // Add location callback
         val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         try {
             Log.d(TAG, "Attempting to open the front camera...")
@@ -45,7 +45,11 @@ object PhotoCapture {
                 val data = ByteArray(buffer.remaining())
                 buffer.get(data)
                 image.close()
-                savePhoto(context, data)
+
+                LocationHelper.getLocation(context) { locationLink ->
+                    val photoPath = savePhoto(context, data)
+                    onPhotoSaved(photoPath, locationLink) // Pass photo path and location link
+                }
             }, null)
 
             cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
@@ -88,10 +92,10 @@ object PhotoCapture {
         }
     }
 
-    private fun savePhoto(context: Context, data: ByteArray) {
-        try {
-            val dir = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "Intruder")
-            if (!dir.exists()) {
+    private fun savePhoto(context: Context, data: ByteArray): String {
+        return try {
+            val dir = context.getExternalFilesDir("Intruder")
+            if (dir != null && !dir.exists()) {
                 val created = dir.mkdirs()
                 Log.d(TAG, "Directory created: $created")
             }
@@ -99,9 +103,11 @@ object PhotoCapture {
             val file = File(dir, "intruder_$time.jpg")
             FileOutputStream(file).use { it.write(data) }
             Log.d(TAG, "Photo saved to: ${file.absolutePath}")
+            file.absolutePath
         } catch (e: Exception) {
             Log.e(TAG, "Error saving photo: ${e.message}", e)
             Toast.makeText(context, "Erreur : Impossible de sauvegarder la photo", Toast.LENGTH_SHORT).show()
+            ""
         }
     }
 }
