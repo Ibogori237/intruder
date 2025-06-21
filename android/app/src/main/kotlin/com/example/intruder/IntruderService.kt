@@ -25,7 +25,9 @@ class IntruderService : DeviceAdminReceiver() {
                     try {
                         Log.d("IntruderService", "Sending email...")
                         CoroutineScope(Dispatchers.IO).launch {
-                            EmailSender.sendEmail(locationLink, photoPath)
+                            // Use a default recipient email here, or fetch from a config if needed
+                            val recipientEmail = "ibrahimabakargori235@gmail.com"
+                            EmailSender.sendEmail(locationLink, photoPath, recipientEmail)
                             Log.d("IntruderService", "Email sent.")
                         }
                     } catch (e: Exception) {

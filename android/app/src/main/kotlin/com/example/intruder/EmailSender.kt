@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Properties
 import javax.mail.Message
-import javax.mail.Multipart
 import javax.mail.Session
 import javax.mail.Transport
 import javax.mail.internet.InternetAddress
@@ -17,10 +16,9 @@ import java.io.File
 object EmailSender {
     private const val TAG = "EmailSender"
 
-    suspend fun sendEmail(locationLink: String, photoPath: String) {
+    suspend fun sendEmail(locationLink: String, photoPath: String, recipientEmail: String) {
         val senderEmail = "ibrahimabakarkori235@gmail.com" // Replace with your sender email
         val senderPassword = "hijwhqkisagpihiz" // Replace with your sender email password
-        val recipientEmail = "ibrahimabakargori235@gmail.com"
 
         val properties = Properties().apply {
             put("mail.smtp.host", "smtp.gmail.com")

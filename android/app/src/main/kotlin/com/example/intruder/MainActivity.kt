@@ -5,6 +5,9 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : FlutterFragmentActivity() {
 
@@ -17,9 +20,14 @@ class MainActivity : FlutterFragmentActivity() {
             when (call.method) {
                 "takePhotoFromNative" -> {
                     try {
+                        val recipientEmail = call.argument<String>("recipientEmail") ?: "ibrahimabakargori235@gmail.com"
                         PhotoCapture.takePhoto(this) { photoPath, locationLink ->
                             if (photoPath.isNotEmpty() && locationLink.isNotEmpty()) {
                                 Log.d("MainActivity", "Photo saved at: $photoPath, Location: $locationLink")
+                                // Launch coroutine to send email
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    EmailSender.sendEmail(locationLink, photoPath, recipientEmail)
+                                }
                                 result.success("Photo saved at: $photoPath, Location: $locationLink")
                             } else {
                                 result.error("ERROR", "Photo capture or location retrieval failed", null)
